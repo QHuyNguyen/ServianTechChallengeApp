@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  DockerImage:
+    Type: String
+    Default: dockertest02101992/containerofcats
+    #Default: dockertest02101992/techchallengeapp_techchallengeapp
+    Description: Docker image used in the ECS task definition. Override the default to use a custom image (mandatory).
+Resources:
+  VPCNestedStack: #Create a nested VPC stack using customer-vpc file saved in AWS S3 bucket
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/linh4life.de/custom-vpc.yaml
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: deployment-cluster
+  ECSContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ContainerSecurityGroup
+      GroupDescription: Security group for TechChallengeApp container
+      VpcId: !GetAtt VPCNestedStack.Outputs.VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: deployment-task
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc #Docker Networking mode (none, bridge, awsvpc, host)
+      #ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      ContainerDefinitions:
+        - Name: deployment-Container
+          Image: !Ref DockerImage
+          PortMappings:
+            - ContainerPort: 80
+      RequiresCompatibilities:
+        - EC2
+        - FARGATE
+  ECSService: #runs and maintains the requested number of tasks and associated load balancers
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: deployment-service
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !GetAtt VPCNestedStack.Outputs.WebSubnet
+          SecurityGroups:
+            - !GetAtt ECSContainerSecurityGroup.GroupId
