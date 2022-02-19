@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  #Create a Custom VPC
+  ProdVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      CidrBlock: 10.16.0.0/16
+      Tags:
+        - Key: Name
+          Value: test-vpc
+  IPV6CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref ProdVPC
+      AmazonProvidedIpv6CidrBlock: true
+  #Create a internet gateway and attach to ProdVPC
+  ProdVPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: test-igw
+  #InternetGatewayAttachment depend on IGW and VPC
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref ProdVPCInternetGateway
+      VpcId: !Ref ProdVPC
+  #Create Routetable for VPC
+  ProdVPCRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: production-vpc-routetable
+      VpcId: !Ref ProdVPC
+  #Create a route in a route table of prodVPC
+  ProdVPCRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref ProdVPCInternetGateway
+      RouteTableId: !Ref ProdVPCRouteTable
+  #Associate a web subnet with route table
+  RouteTableAssociationWeb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref ProdVPCRouteTable
+      SubnetId: !Ref WebSubnet
+  #Create subnet for VPC
+  WebSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.16.0.0/18
+      VpcId: !Ref ProdVPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: sn-web
+  AppSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.16.64.0/18
+      VpcId: !Ref ProdVPC
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: sn-app
+  DBSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.16.128.0/18
+      VpcId: !Ref ProdVPC
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: sn-db
+  ReservedSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.16.192.0/18
+      VpcId: !Ref ProdVPC
+      AvailabilityZone: !Select [ 3, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: sn-reserved
+  #Create a security group for web subnet instance
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22 IPv4 & v6
+      VpcId: !Ref ProdVPC
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          Description: Allow SSH IPv4 IN
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          Description: Allow HTTP IN
+Outputs:
+  CIDRVPC:
+    Value: !GetAtt ProdVPC.CidrBlock
+  WebSubnet:
+    Value: !Ref WebSubnet
+  AppSubnet:
+    Value: !Ref AppSubnet
+  DBSubnet:
+    Value: !Ref DBSubnet
+  VPC:
+    Value: !Ref ProdVPC
