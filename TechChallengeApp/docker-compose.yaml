@@ -1,0 +1,41 @@
+version: '3'
+services:
+  techchallengeapp: #Create container for techchallengeapp
+    container_name: techchallengeapp #Set container name
+    restart: always #Set Restart as always to prevent unwanted interruption
+    build: . #specify the directory of Dockerfile
+    environment: #Add Environment variables
+      DbUser: postgres
+      DbPassword: changeme
+      DbName: app
+      DbPort: "5432"
+      DbHost: localhost
+      ListenHost: localhost
+      ListenPort: "3000"
+    depends_on: #Make sure Database is build first
+      - db
+    ports:
+      - 3000:3000 #Specify port forwarding
+    networks:
+      - test-network
+  db:
+    image: postgres:9.6
+    container_name: app
+    ports:
+      - 5432:5432
+    volumes: #Set up volume to persist container data to external volume
+      - ./config/config.go:/docker-entrypoint-initdb.d/db.go #copy the config.go file into container initdb directory for database initialiation
+      - database-data:/var/lib/postgresql/data/ #Map container data to external volume to allow data to persist
+    environment:
+      DbUser: postgres
+      DbPassword: changeme
+      DbName: app
+    networks:
+      - test-network
+
+networks: #Set up bridge network to allow 2 containers to talk to each other
+  test-network:
+    driver: bridge 
+
+volumes: #Set up external volume
+  database-data:
