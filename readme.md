@@ -1,5 +1,5 @@
 # Servian DevOps Tech Challenge - Tech Challenge App
-***
+
 This is my attempt to complete the challenge, I break it down into 2 different taks
 1. Docker
     -   Use a docker-compose to run multiple container (techchallengeapp and db)
@@ -9,16 +9,16 @@ This is my attempt to complete the challenge, I break it down into 2 different t
     -   Set up ECS to run the container
 
 ## Prerequisite
-***
+
     * Git
     * AWS CLI
     * Docker
 
 ## Docker
-***
+
 Checkout:
 ```
-git clone 
+git clone https://github.com/QHuyNguyen/ServianTechChallengeApp.git
 ```
 
 Build app container image:
@@ -43,7 +43,7 @@ make clean
 ```
 
 ## AWS ECS
-***
+
 Create new AWS configuration:
 ```
 make cfinit
