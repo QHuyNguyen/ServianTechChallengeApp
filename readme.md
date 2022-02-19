@@ -1,6 +1,6 @@
 # Servian DevOps Tech Challenge - Tech Challenge App
 
-This is my attempt to complete the challenge, I break it down into 2 different taks
+This is my attempt to complete the challenge, I break it down into 2 different tasks
 1. Docker
     -   Use a docker-compose to run multiple container (techchallengeapp and db)
     -   Push the image to docker hub
@@ -60,5 +60,5 @@ make cfdestroy
 ```
 
 # Self Reflect
-I did not succeed in running the TechchallengeApp, the app exit the second it run, simply running docker logs <containerappname> does not reveal what went wrong. I tried to change Dockerfile ENTRYPOINT to [ "./TechChallengeApp", "serve" ] and that did stop it from exiting, but i felt i'm not suppose to make change to the prebuilt project so I reverted it back in the end. 
-So in a desperate attempt to complete the challenge in time, i use my own docker image for the demo, i focus most of my time to complete the infrastructure of both VPC and ECS, and I'm happy with how it turn out.
+I did not succeed in running the TechchallengeApp, the app exits the second it runs, simply running docker logs <containerappname> does not reveal what went wrong. I tried to change Dockerfile ENTRYPOINT to [ "./TechChallengeApp", "serve" ] and that did stop it from exiting, but I felt I'm not suppose to make change to the prebuilt project so I reverted it back in the end. 
+So in a desperate attempt to complete the challenge in time, I use my own docker image for the demo, I focus most of my time to complete the infrastructure of both VPC and ECS, and I'm happy with how it turn out.
