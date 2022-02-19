@@ -32,7 +32,6 @@ Resources:
       Cpu: 256
       Memory: 512
       NetworkMode: awsvpc #Docker Networking mode (none, bridge, awsvpc, host)
-      #ExecutionRoleArn: !Ref ECSTaskExecutionRole
       ContainerDefinitions:
         - Name: deployment-Container
           Image: !Ref DockerImage
@@ -47,7 +46,7 @@ Resources:
       ServiceName: deployment-service
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
-      DesiredCount: 1
+      DesiredCount: 2
       LaunchType: FARGATE
       NetworkConfiguration:
         AwsvpcConfiguration:

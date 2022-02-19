@@ -1,7 +1,7 @@
 all: build tag push
 
 build:
-	docker-compose up -d --build
+	cd TechChallengeApp && docker-compose up -d --build
 
 tag:
 	docker tag techchallengeapp_techchallengeapp:latest YOURACCOUNT/techchallengeapp_techchallengeapp
@@ -9,10 +9,10 @@ tag:
 push:
 	docker push dockertest02101992/techchallengeapp_techchallengeapp
 
-clean:
+stop:
 	docker stop $$(docker ps -aq)
 
-destroy:
+clean:
 	docker container prune
 	docker image prune
 
